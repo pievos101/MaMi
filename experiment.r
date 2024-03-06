@@ -32,7 +32,7 @@ for(xx in 1:n_iter){
                     method = "knn",
                     preProcess =  c("center","scale"),
                     tuneGrid=data.frame(k=5))
-    knnPredict <- predict(knnFit,newdata = test)
+    knnPredict <- predict(knnFit, newdata = test)
     KNN_perf = ARI(knnPredict, test_labels)
 
 
