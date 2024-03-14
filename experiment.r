@@ -4,7 +4,7 @@ source("mami_crossval.r")
 source("get_dataset.r")
 library(mlbench)
 
-res = get_dataset("YEAST")
+res = get_dataset("WDBC")
 DATA  = res$train
 labels = res$target
 t = table(labels)
@@ -35,7 +35,7 @@ for(xx in 1:n_iter){
 
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
-    res = mami(train, test, train_labels, k1=5, k2=10)
+    res = mami(train, test, train_labels, k1=5, k2=50)
     pred   = res$prediction
     pred2  = res$coverage
     colnames(pred2) = sort(unique(train_labels))

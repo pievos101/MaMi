@@ -59,7 +59,7 @@ for(xx in 1:nrow(K1_l)){
     for(yy in 1:length(l1)){
         ids = which(K1_l[xx,] == as.numeric(names(l1[yy])))
         #ids = which(K1_l[xx,] == maj)
-        #COV[yy] = sum(C_list[[xx]][ids])/(k1*k2)
+        #COV[yy] = sum(C_list[[xx]][ids])/(length(ids)*k2)
         COV[yy] = sum(C_list[[xx]][ids])/(k1*k2)
     }
     #print(COV)
