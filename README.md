@@ -50,4 +50,5 @@ target_test  = target[-train_ind]
 
 # Call the Major-Minority algorithm
 res = mami(train, test, target_train)
+res
 ```
