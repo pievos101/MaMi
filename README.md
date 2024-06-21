@@ -3,7 +3,7 @@
 ## Calibrated kNN Classification via Second-Layer Neighborhood Analysis 
 
 <p align="center">
-<img src="https://github.com/pievos101/MaMi/blob/main/logo.jpeg" width="200">
+<img src="https://github.com/pievos101/MaMi/blob/main/logo.jpeg" width="300">
 </p>
 
 
