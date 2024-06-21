@@ -28,8 +28,6 @@ source("mami.r")
 ## Usage
 
 ```{r}
-library(MaMi)
-
 # Load data
 data(iris)
 data = as.matrix(iris[,1:4])
@@ -49,6 +47,7 @@ target_train = target[train_ind]
 target_test  = target[-train_ind]
 
 # Call the Major-Minority algorithm
+source("mami.r")
 res = mami(train, test, target_train)
 res
 ```
