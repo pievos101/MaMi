@@ -15,19 +15,23 @@ install.packages("devtools")
 library(devtools)
 
 devtools::install_github("pievos101/MaMi")
-library(cpath)
-
+library(MaMi)
 ```
 
+## Load from source
+
+```{r}
+source("mami.r")
+```
 ## Usage
 
 ```{r}
 library(MaMi)
 
-# Generate simulated data
-res  = sim()
-data = res$data
-target = res$target
+# Load data
+data(iris)
+data = as.matrix(iris[,1:4])
+target = iris[,5]
 
 # Train-test split 
 
@@ -42,4 +46,6 @@ test  <- data[-train_ind, ]
 target_train = target[train_ind]
 target_test  = target[-train_ind]
 
+# Call the Major-Minority algorithm
+res = mami(train, test, target_train)
 ```
