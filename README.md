@@ -20,6 +20,8 @@ library(MaMi)
 
 ## Load from source
 
+The development of the MaMi R-package is in progress. Meanwhile the Major-Minority algorithm can be loaded via source file.
+
 ```{r}
 source("mami.r")
 ```
