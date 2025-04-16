@@ -33,7 +33,7 @@ colnames(RES) = c("MaMi","kNN","wkNN")
 
 probs = TRUE
 #calibMethod = "BRIER"
-setK = 1
+setK = 2
 
 for(xx in 1:n_iter){
 
@@ -70,7 +70,7 @@ for(xx in 1:n_iter){
         MAMI_perf = multiclass.roc(test_labels, pred2)$auc[1]
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
-        ppp = apply(pred2, 1, max) #pred2[,2] #
+        ppp = pred2[,2] #apply(pred2, 1, max) 
         #MAMI_perf = getECE(test_labels-1, ppp)
         MAMI_perf = ece(np_array(ppp), np_array(test_labels-1))
         #, as.integer(10), as.character('l2'))
@@ -101,7 +101,7 @@ for(xx in 1:n_iter){
         KNN_perf = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = apply(knnPredict2, 1, max) #knnPredict2[,2] #
+        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max) 
         #KNN_perf = getECE(test_labels-1, ppp)
         KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
@@ -129,7 +129,7 @@ for(xx in 1:n_iter){
         KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = apply(knnPredict2, 1, max) #knnPredict2[,2] #
+        ppp = knnPredict2[,2] # apply(knnPredict2, 1, max) 
         #KNN_perf_w = getECE(test_labels-1, ppp)
         KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
