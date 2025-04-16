@@ -10,7 +10,7 @@ library(CalibratR)
 library(reticulate)
 source_python("calibration_metric.py")
 
-DATASET = "HEART"
+DATASET = "SONAR"
 
 res = get_dataset(DATASET)
 DATA  = res$train
@@ -70,6 +70,7 @@ for(xx in 1:n_iter){
         MAMI_perf = multiclass.roc(test_labels, pred2)$auc[1]
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
+        #print(pred2)
         ppp = pred2[,2] #apply(pred2, 1, max) 
         #MAMI_perf = getECE(test_labels-1, ppp)
         MAMI_perf = ece(np_array(ppp), np_array(test_labels-1))
