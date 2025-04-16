@@ -17,12 +17,14 @@ ids = !is.element(labels, LL)
 DATA = DATA[ids,]
 labels = labels[ids]
 labels = as.numeric(as.factor(labels))
+
 n_iter = 100 
-RES = matrix(NaN, n_iter, 2)
+RES = matrix(NaN, n_iter, 3)
+colnames(RES) = c("MaMi","kNN","wkNN")
 
 probs = TRUE
 calibMethod = "BRIER"
-setK = 2
+setK = 5
 
 for(xx in 1:n_iter){
 
@@ -66,6 +68,7 @@ for(xx in 1:n_iter){
 
     #ARI(pred, test_labels)
 
+    # NON-WEIGHTED KNN
     # Now with caret
     library(caret)
     #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
@@ -91,12 +94,42 @@ for(xx in 1:n_iter){
         KNN_perf = getECE(test_labels-1, ppp)
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$ 
-                     
+
+    # NON-WEIGHTED KNN
+    # Now with caret
+    library(caret)
+    #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
+    #knnFit <- train(Direction ~ ., data = training, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
+    knnFit <- train(x=train, y=as.factor(train_labels), 
+                    method = "kknn",
+                    preProcess =  c("center","scale"),
+                    tuneGrid = data.frame(kmax = setK, distance = 2, kernel = "optimal"))
+    knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
+    knnPredict  <- predict(knnFit, newdata = test)
+    #print("KNN ------------------------")
+    #print(knnPredict2)
+    
+    #knnPredict <- knnPredict[,2]
+    colnames(knnPredict2) = sort(unique(train_labels))
+    if(probs){
+        KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
+    }else{
+        KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
+        #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
+    }
+        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max)
+        KNN_perf_w = getECE(test_labels-1, ppp)
+        #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        #KNN_perf = cstat$calibration_error$          
+
+
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = KNN_perf
+RES[xx,3] = KNN_perf_w
+
 print(RES)
 }
 
-colnames(RES) = c("MaMi","kNN")
+colnames(RES) = c("MaMi","kNN","wkNN")
 boxplot(RES, col="cadetblue", ylab="Adjusted R-index")
