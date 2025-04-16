@@ -7,7 +7,12 @@ library(ModelMetrics)
 library(MLmetrics)
 library(CalibratR)
 
-res = get_dataset("HEART")
+library(reticulate)
+source_python("calibration_metric.py")
+
+DATASET = "HEART"
+
+res = get_dataset(DATASET)
 DATA  = res$train
 labels = res$target
 t = table(labels)
@@ -18,13 +23,17 @@ DATA = DATA[ids,]
 labels = labels[ids]
 labels = as.numeric(as.factor(labels))
 
+if(DATASET=="IONOSPHERE"){
+    DATA = DATA[,-2]
+}
+
 n_iter = 100 
 RES = matrix(NaN, n_iter, 3)
 colnames(RES) = c("MaMi","kNN","wkNN")
 
 probs = TRUE
-calibMethod = "BRIER"
-setK = 5
+#calibMethod = "BRIER"
+setK = 1
 
 for(xx in 1:n_iter){
 
@@ -61,8 +70,10 @@ for(xx in 1:n_iter){
         MAMI_perf = multiclass.roc(test_labels, pred2)$auc[1]
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
-        ppp = pred2[,2] #apply(pred2, 1, max)
-        MAMI_perf = getECE(test_labels-1, ppp)
+        ppp = apply(pred2, 1, max) #pred2[,2] #
+        #MAMI_perf = getECE(test_labels-1, ppp)
+        MAMI_perf = ece(np_array(ppp), np_array(test_labels-1))
+        #, as.integer(10), as.character('l2'))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #MAMI_perf = cstat$calibration_error$brier_class_0 
 
@@ -90,8 +101,9 @@ for(xx in 1:n_iter){
         KNN_perf = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max)
-        KNN_perf = getECE(test_labels-1, ppp)
+        ppp = apply(knnPredict2, 1, max) #knnPredict2[,2] #
+        #KNN_perf = getECE(test_labels-1, ppp)
+        KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$ 
 
@@ -117,8 +129,9 @@ for(xx in 1:n_iter){
         KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max)
-        KNN_perf_w = getECE(test_labels-1, ppp)
+        ppp = apply(knnPredict2, 1, max) #knnPredict2[,2] #
+        #KNN_perf_w = getECE(test_labels-1, ppp)
+        KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$          
 
