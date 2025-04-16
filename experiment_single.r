@@ -1,10 +1,23 @@
 #
-source("mami.r")
+source("../mami.r")
+source("../boundary.r")
 library(mlbench)
 
-data(iris)
-DATA = iris[,-5]
-labels = as.numeric(iris[,5])
+source("/home/bastian/GitHub/MaMi/get_dataset.r")
+
+DATASET = c("HEART")
+
+res = get_dataset(DATASET)
+DATA  = res$train
+labels = res$target
+t = table(labels)
+ids = which(t<=5)
+LL = as.numeric(names(t[ids]))
+ids = !is.element(labels, LL)
+DATA = DATA[ids,]
+labels = labels[ids]
+labels = as.numeric(as.factor(labels))
+
 
 # train test split
     ids = sample(1:nrow(DATA), ceiling(0.8*nrow(DATA)))

@@ -1,13 +1,13 @@
 #
-source("mami.r")
-source("mami_crossval.r")
-source("get_dataset.r")
+source("/home/bastian/GitHub/MaMi/mami.r")
+source("/home/bastian/GitHub/MaMi/mami_crossval.r")
+source("/home/bastian/GitHub/MaMi/get_dataset.r")
 library(mlbench)
 library(ModelMetrics)
 library(MLmetrics)
 library(CalibratR)
 
-res = get_dataset("SONAR")
+res = get_dataset("HEART")
 DATA  = res$train
 labels = res$target
 t = table(labels)
@@ -21,6 +21,8 @@ n_iter = 100
 RES = matrix(NaN, n_iter, 2)
 
 probs = TRUE
+calibMethod = "BRIER"
+setK = 2
 
 for(xx in 1:n_iter){
 
@@ -40,7 +42,7 @@ for(xx in 1:n_iter){
 
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
-    res = mami(train, test, train_labels, k1=50, k2=5)
+    res = mami(train, test, train_labels, k1=setK, k2=5)
     pred   = res$prediction
     pred2  = res$coverage
     #print("MAMI ------------------------")
@@ -57,8 +59,11 @@ for(xx in 1:n_iter){
         MAMI_perf = multiclass.roc(test_labels, pred2)$auc[1]
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
-        ppp = apply(pred2, 1, max)
+        ppp = pred2[,2] #apply(pred2, 1, max)
         MAMI_perf = getECE(test_labels-1, ppp)
+        #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        #MAMI_perf = cstat$calibration_error$brier_class_0 
+
     #ARI(pred, test_labels)
 
     # Now with caret
@@ -68,9 +73,9 @@ for(xx in 1:n_iter){
     knnFit <- train(x=train, y=as.factor(train_labels), 
                     method = "knn",
                     preProcess =  c("center","scale"),
-                    tuneGrid=data.frame(k=50))
+                    tuneGrid=data.frame(k=setK))
     knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
-    knnPredict <- predict(knnFit, newdata = test)
+    knnPredict  <- predict(knnFit, newdata = test)
     #print("KNN ------------------------")
     #print(knnPredict2)
     
@@ -82,8 +87,11 @@ for(xx in 1:n_iter){
         KNN_perf = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = apply(knnPredict2, 1, max)
+        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max)
         KNN_perf = getECE(test_labels-1, ppp)
+        #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        #KNN_perf = cstat$calibration_error$ 
+                     
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = KNN_perf

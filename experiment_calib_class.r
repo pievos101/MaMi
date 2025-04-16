@@ -1,12 +1,15 @@
 #
-source("../mami.r")
-source("../mami_crossval.r")
-source("../get_dataset.r")
+source("/home/bastian/GitHub/MaMi/mami.r")
+source("/home/bastian/GitHub/MaMi/mami_crossval.r")
+source("/home/bastian/GitHub/MaMi/get_dataset.r")
 library(mlbench)
 library(ModelMetrics)
 library(MLmetrics)
+library(CalibratR)
 
-DATASET = "IRIS"
+
+DATASET = c("IONOSPHERE")
+
 res = get_dataset(DATASET)
 DATA  = res$train
 labels = res$target
@@ -19,11 +22,13 @@ labels = labels[ids]
 labels = as.numeric(as.factor(labels))
 n_iter = 100 
 
-Kall = c(1,2,3,5,10,50)
 
 probs = TRUE
+wclass = 1
+calibMethod = "BRIER"
+setK = c(1,2,3,5,10,50)
 
-for(kk in 1:length(Kall)){
+for(aa in 1:length(setK)){
 RES = matrix(NaN, n_iter, 2)
 for(xx in 1:n_iter){
 
@@ -43,7 +48,7 @@ for(xx in 1:n_iter){
 
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
-    res = mami(train, test, train_labels, k1=Kall[kk], k2=5)
+    res = mami(train, test, train_labels, k1=setK[aa], k2=5)
     pred   = res$prediction
     pred2  = res$coverage
     #print("MAMI ------------------------")
@@ -60,6 +65,25 @@ for(xx in 1:n_iter){
         MAMI_perf = multiclass.roc(test_labels, pred2)$auc[1]
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
+        ppp = pred2[,2] #apply(pred2, 1, max)
+        #ppp = rep(NaN, nrow(pred2))
+        #for(zz in 1:nrow(pred2)){
+        #    if((test_labels[zz])==1){
+        #        ppp[zz] = pred2[zz,1] 
+        #    }else{
+        #        ppp[zz] = pred2[zz,2]
+        #    }
+        #}
+
+        MAMI_perf = getECE(test_labels-1, ppp)
+        cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        
+        if(wclass==0){
+        MAMI_perf = cstat$calibration_error$brier_class_0 
+        }else{
+        MAMI_perf = cstat$calibration_error$brier_class_1     
+        }
+
     #ARI(pred, test_labels)
 
     # Now with caret
@@ -69,9 +93,9 @@ for(xx in 1:n_iter){
     knnFit <- train(x=train, y=as.factor(train_labels), 
                     method = "knn",
                     preProcess =  c("center","scale"),
-                    tuneGrid=data.frame(k=Kall[kk]*5))
+                    tuneGrid=data.frame(k=setK[aa]))
     knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
-    knnPredict <- predict(knnFit, newdata = test)
+    knnPredict  <- predict(knnFit, newdata = test)
     #print("KNN ------------------------")
     #print(knnPredict2)
     
@@ -83,15 +107,34 @@ for(xx in 1:n_iter){
         KNN_perf = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
+        ppp = knnPredict2[,2] #apply(pred2, 1, max)
+        #ppp = rep(NaN, nrow(pred2))
+        #for(zz in 1:nrow(pred2)){
+        #    if((test_labels[zz])==1){
+        #        ppp[zz] = pred2[zz,1] 
+        #    }else{
+        #        ppp[zz] = pred2[zz,2]
+        #    }
+        #}
+
+        KNN_perf = getECE(test_labels-1, ppp)
+        cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        
+        if(wclass==0){
+        KNN_perf = cstat$calibration_error$CLE_class_0 
+        }else{
+        KNN_perf = cstat$calibration_error$CLE_class_1     
+        } 
+                     
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = KNN_perf
 print(RES)
-print(Kall[kk])
-}
-IN = paste(DATASET,"_AUC_k1_",Kall[kk],".txt", sep="")
-write.table(RES, file=IN)
 }
 
-colnames(RES) = c("MaMi","kNN")
-boxplot(RES, col="cadetblue", ylab="Adjusted R-index")
+fname = paste(DATASET,"_",setK[aa],"_CLASS_",wclass,".txt", sep="")
+write.table(RES, file=fname)
+}
+
+#colnames(RES) = c("MaMi","kNN")
+#boxplot(RES, col="cadetblue", ylab="Adjusted R-index")
