@@ -29,11 +29,11 @@ if(DATASET=="SONAR"){
 
 n_iter = 50 
 RES = matrix(NaN, n_iter, 3)
-colnames(RES) = c("MaMi","kNN","wkNN")
+colnames(RES) = c("MaMi","kNN","wKNN")
 
 probs = TRUE
 #calibMethod = "BRIER"
-setK = 2
+setK = 10
 
 for(xx in 1:n_iter){
 
