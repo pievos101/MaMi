@@ -33,7 +33,7 @@ colnames(RES) = c("MaMi","kNN","wkNN")
 
 probs = TRUE
 #calibMethod = "BRIER"
-setK = 2
+setK = 5
 
 for(xx in 1:n_iter){
 
@@ -71,9 +71,12 @@ for(xx in 1:n_iter){
        # MAMI_perf = MLmetrics::F1_Score(pred, test_labels)
     }
         #print(pred2)
+        #pred2 = t(apply(pred2, 1, function(row) row / sum(row)))
         ppp = pred2[,2] #apply(pred2, 1, max) 
         #MAMI_perf = getECE(test_labels-1, ppp)
-        MAMI_perf = ece(np_array(ppp), np_array(test_labels-1))
+        #MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        #print(MAMI_perf)
         #, as.integer(10), as.character('l2'))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #MAMI_perf = cstat$calibration_error$brier_class_0 
@@ -104,7 +107,8 @@ for(xx in 1:n_iter){
     }
         ppp = knnPredict2[,2] #apply(knnPredict2, 1, max) 
         #KNN_perf = getECE(test_labels-1, ppp)
-        KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
+        #KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
+        KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$ 
 
@@ -116,7 +120,7 @@ for(xx in 1:n_iter){
     knnFit <- train(x=train, y=as.factor(train_labels), 
                     method = "kknn",
                     preProcess =  c("center","scale"),
-                    tuneGrid = data.frame(kmax = setK, distance = 2, kernel = "optimal"))
+                    tuneGrid = data.frame(kmax = setK, distance = 2, kernel = "triangular"))
     knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
     knnPredict  <- predict(knnFit, newdata = test)
     #print("KNN ------------------------")
@@ -132,7 +136,9 @@ for(xx in 1:n_iter){
     }
         ppp = knnPredict2[,2] # apply(knnPredict2, 1, max) 
         #KNN_perf_w = getECE(test_labels-1, ppp)
-        KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
+        #KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
+        #print(ppp)
+        KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$          
 
