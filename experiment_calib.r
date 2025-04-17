@@ -23,7 +23,7 @@ DATA = DATA[ids,]
 labels = labels[ids]
 labels = as.numeric(as.factor(labels))
 
-if(DATASET=="SONAR"){
+if(DATASET=="IONOSPHERE"){
     DATA = DATA[,-2]
 }
 
@@ -73,11 +73,11 @@ for(xx in 1:n_iter){
         #print(pred2)
         #pred2 = t(apply(pred2, 1, function(row) row / sum(row)))
         ppp = pred2[,2] #apply(pred2, 1, max) 
-        MAMI_perf = getECE(test_labels-1, ppp, n_bins=10)
+        #MAMI_perf = getECE(test_labels-1, ppp, n_bins=10)
         #MAMI_perf = get_ECE_equal_width(test_labels-1, ppp)
         
         #MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"))
-        #MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #print(MAMI_perf)
         #, as.integer(10), as.character('l2'))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
@@ -108,11 +108,11 @@ for(xx in 1:n_iter){
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
         ppp = knnPredict2[,2] #apply(knnPredict2, 1, max) 
-        KNN_perf = getECE(test_labels-1, ppp, n_bins=10)
+        #KNN_perf = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf = get_ECE_equal_width(test_labels-1, ppp)
         
         #KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
-        #KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$ 
 
@@ -139,11 +139,11 @@ for(xx in 1:n_iter){
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
         ppp = knnPredict2[,2] # apply(knnPredict2, 1, max) 
-        KNN_perf_w = getECE(test_labels-1, ppp, n_bins=10)
+        #KNN_perf_w = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf_w = get_ECE_equal_width(test_labels-1, ppp)
         #KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
         #print(ppp)
-        #KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$          
 
