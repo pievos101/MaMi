@@ -19,7 +19,7 @@ for (xx in 1:length(DATASETS)){
 }
 
 DATA = D_ALL
-colnames(DATA) = c("data","k","MaMi","kNN")
+colnames(DATA) = c("data","k","MaMi","kNN","wKNN")
 DATA = as.data.frame(DATA)
 DATA$MaMi = as.numeric(DATA$MaMi)
 DATA$kNN = as.numeric(DATA$kNN)
@@ -28,9 +28,9 @@ library(reshape)
 library(ggplot2)
 
 DATA = melt(DATA)
-colnames(DATA) = c("data","k","method","value")
+colnames(DATA) = c("data","k","Method","value")
 
-p <- ggplot(DATA, aes(x=k, y=value, fill=method)) +
+p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
   geom_boxplot(outlier.shape = NA) +
   #geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
   ylab("Brier Score") +

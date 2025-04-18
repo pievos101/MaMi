@@ -10,7 +10,7 @@ library(CalibratR)
 library(reticulate)
 source_python("/home/bastian/GitHub/MaMi/calibration_metric.py")
 
-DATASET = "SONAR"
+DATASET = "PARKINSON"
 
 res = get_dataset(DATASET)
 DATA  = res$train

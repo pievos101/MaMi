@@ -23,9 +23,9 @@ library(reshape)
 library(ggplot2)
 
 DATA = melt(DATA)
-colnames(DATA) = c("data","k","method","value")
+colnames(DATA) = c("data","k","Method","value")
 
-p <- ggplot(DATA, aes(x=k, y=value, fill=method)) +
+p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
   geom_boxplot(outlier.shape = NA) +
   #geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
   ylab("Expected Calibration Error (ECE)") +
@@ -64,9 +64,9 @@ library(reshape)
 library(ggplot2)
 
 DATA = melt(DATA)
-colnames(DATA) = c("data","k","method","value")
+colnames(DATA) = c("data","k","Method","value")
 
-p <- ggplot(DATA, aes(x=k, y=value, fill=method)) +
+p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
   geom_boxplot(outlier.shape = NA) +
   #geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
   ylab("Test-based Calibration Error (TCE)") +

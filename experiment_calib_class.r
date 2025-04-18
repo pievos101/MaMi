@@ -8,7 +8,15 @@ library(MLmetrics)
 library(CalibratR)
 
 
-DATASET = c("HEART")
+library(reticulate)
+source_python("/home/bastian/GitHub/MaMi/calibration_metric.py")
+
+
+DATASET = c("PARKINSON")
+
+
+#wclass = 0
+
 
 res = get_dataset(DATASET)
 DATA  = res$train
@@ -20,17 +28,24 @@ ids = !is.element(labels, LL)
 DATA = DATA[ids,]
 labels = labels[ids]
 labels = as.numeric(as.factor(labels))
-n_iter = 100 
+n_iter = 50 
 
+
+if(DATASET=="IONOSPHERE"){
+    DATA = DATA[,-2]
+}
 
 probs = TRUE
-wclass = 0
 calibMethod = "BRIER"
 setK = c(1,2,3,5,10,50)
 
 for(aa in 1:length(setK)){
-RES = matrix(NaN, n_iter, 3)
-colnames(RES) = c("MaMi","kNN","wKNN")
+
+RES_0 = matrix(NaN, n_iter, 3)
+colnames(RES_0) = c("MaMi","kNN","wKNN")
+RES_1 = matrix(NaN, n_iter, 3)
+colnames(RES_1) = c("MaMi","kNN","wKNN")
+
 for(xx in 1:n_iter){
 
     cat("K=",setK[aa],sep="","\n")
@@ -81,11 +96,11 @@ for(xx in 1:n_iter){
         MAMI_perf = getECE(test_labels-1, ppp)
         cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         
-        if(wclass==0){
-        MAMI_perf = cstat$calibration_error$brier_class_0 
-        }else{
-        MAMI_perf = cstat$calibration_error$brier_class_1     
-        }
+        #if(wclass==0){
+        MAMI_perf_0 = cstat$calibration_error$brier_class_0 
+        #}else{
+        MAMI_perf_1 = cstat$calibration_error$brier_class_1     
+        #}
 
     #ARI(pred, test_labels)
 
@@ -124,11 +139,11 @@ for(xx in 1:n_iter){
         KNN_perf = getECE(test_labels-1, ppp)
         cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         
-        if(wclass==0){
-        KNN_perf = cstat$calibration_error$CLE_class_0 
-        }else{
-        KNN_perf = cstat$calibration_error$CLE_class_1     
-        } 
+        #if(wclass==0){
+        KNN_perf_0 = cstat$calibration_error$CLE_class_0 
+        #}else{
+        KNN_perf_1 = cstat$calibration_error$CLE_class_1     
+        #} 
     
     # WEIGHTED KNN
     # Now with caret
@@ -165,21 +180,31 @@ for(xx in 1:n_iter){
         KNN_perf_w = getECE(test_labels-1, ppp)
         cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         
-        if(wclass==0){
-        KNN_perf_w = cstat$calibration_error$CLE_class_0 
-        }else{
-        KNN_perf_w = cstat$calibration_error$CLE_class_1     
-        }             
+        #if(wclass==0){
+        KNN_perf_w_0 = cstat$calibration_error$CLE_class_0 
+        #}else{
+        KNN_perf_w_1 = cstat$calibration_error$CLE_class_1     
+        #}             
 
-RES[xx,1] = MAMI_perf
-RES[xx,2] = KNN_perf
-RES[xx,3] = KNN_perf_w
+RES_0[xx,1] = MAMI_perf_0
+RES_0[xx,2] = KNN_perf_0
+RES_0[xx,3] = KNN_perf_w_0
 
-print(RES)
+RES_1[xx,1] = MAMI_perf_1
+RES_1[xx,2] = KNN_perf_1
+RES_1[xx,3] = KNN_perf_w_1
+
+print(RES_0)
+print(RES_1)
+
 }
 
-fname = paste(DATASET,"_",setK[aa],"_CLASS_",wclass,".txt", sep="")
-write.table(RES, file=fname)
+fname = paste(DATASET,"_",setK[aa],"_CLASS_",0,".txt", sep="")
+write.table(RES_0, file=fname)
+fname = paste(DATASET,"_",setK[aa],"_CLASS_",1,".txt", sep="")
+write.table(RES_1, file=fname)
+
+
 }
 
 #colnames(RES) = c("MaMi","kNN")
