@@ -9,7 +9,7 @@ library(CalibratR)
 
 
 library(reticulate)
-source_python("/home/bastian/GitHub/MaMi/calibration_metric.py")
+source_python("/home/bastian/GitHub/MaMi/calibration_metric_2.py")
 
 
 DATASET = c("PARKINSON")
@@ -101,6 +101,7 @@ for(xx in 1:n_iter){
         #}else{
         MAMI_perf_1 = cstat$calibration_error$brier_class_1     
         #}
+       
 
     #ARI(pred, test_labels)
 

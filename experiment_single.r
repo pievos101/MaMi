@@ -1,5 +1,6 @@
 #
 source("../mami.r")
+source("../mami_weighted.r")
 source("../boundary.r")
 library(mlbench)
 
@@ -29,7 +30,10 @@ labels = as.numeric(as.factor(labels))
     rownames(test) = (nrow(train)+1):(nrow(train)+nrow(test))
 
 
-res = mami(train, test, train_labels, k1=2, k2=5)
+res = mami(train, test, train_labels, k1=3, k2=5)
+res2 = mami_weighted(train, test, train_labels, k1=3, k2=5)
+
+
 
 library(caret)
 #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)

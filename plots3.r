@@ -78,6 +78,47 @@ p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
   facet_wrap(~factor(data))
 
 
+####BRIER
+
+DATASETS = c("IONOSPHERE","PARKINSON", "HEART", "SONAR")
+K = c(1,2,3,5,10,50)
+D_ALL = NULL
+
+for (xx in 1:length(DATASETS)){
+    for(yy in 1:length(K)){
+        IN = paste(DATASETS[xx],"_BRIER_",K[yy],".txt", sep="")    
+        D = read.table(IN)
+        #D = D[,1] - D[,2]
+        D = cbind(DATASETS[xx],K[yy], D)
+        D_ALL = rbind(D_ALL, D)
+    }
+    
+}
+
+DATA = D_ALL
+colnames(DATA) = c("data","k","MaMi","kNN","wKNN")
+DATA = as.data.frame(DATA)
+DATA$MaMi = as.numeric(DATA$MaMi)
+DATA$kNN = as.numeric(DATA$kNN)
+DATA$k = as.factor(as.numeric(DATA$k))
+library(reshape)
+library(ggplot2)
+
+DATA = melt(DATA)
+colnames(DATA) = c("data","k","Method","value")
+
+p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
+  geom_boxplot(outlier.shape = NA) +
+  #geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
+  ylab("Brier Score") +
+  xlab("k1-nearest neighbors") +  
+  #theme_bw() +
+  theme_minimal()  + 
+  theme(text = element_text(size=12)) +
+  #ylim(-0.025,0.025) +
+  facet_wrap(~factor(data))
+
+
 ####################################################
 ####################################################
 DATASETS = c("IRIS","ECOLI","YEAST","IONOSPHERE",
