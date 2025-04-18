@@ -33,10 +33,16 @@ colnames(RES) = c("MaMi","kNN","wKNN")
 
 probs = TRUE
 #calibMethod = "BRIER"
-setK = 10
+setK = c(1,2,3,5,10,50)
+
+for(kk in 1:length(setK)){
+
+RES = matrix(NaN, n_iter, 3)
+colnames(RES) = c("MaMi","kNN","wKNN")
 
 for(xx in 1:n_iter){
 
+    cat("K=",setK[kk],sep="","\n")
     # train test split
     ids = sample(1:nrow(DATA), ceiling(0.8*nrow(DATA)))
     train = DATA[ids,]
@@ -53,7 +59,7 @@ for(xx in 1:n_iter){
 
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
-    res = mami(train, test, train_labels, k1=setK, k2=5)
+    res = mami(train, test, train_labels, k1=setK[kk], k2=5)
     pred   = res$prediction
     pred2  = res$coverage
     #print("MAMI ------------------------")
@@ -75,9 +81,11 @@ for(xx in 1:n_iter){
         ppp = pred2[,2] #apply(pred2, 1, max) 
         #MAMI_perf = getECE(test_labels-1, ppp, n_bins=10)
         #MAMI_perf = get_ECE_equal_width(test_labels-1, ppp)
-        
-        #MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"))
-        MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"), 
+            mode='l1')
+        #MAMI_perf = tce_multiclass(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        #print(MAMI_perf)
+        #MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #print(MAMI_perf)
         #, as.integer(10), as.character('l2'))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
@@ -93,7 +101,7 @@ for(xx in 1:n_iter){
     knnFit <- train(x=train, y=as.factor(train_labels), 
                     method = "knn",
                     preProcess =  c("center","scale"),
-                    tuneGrid=data.frame(k=setK))
+                    tuneGrid=data.frame(k=setK[kk]))
     knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
     knnPredict  <- predict(knnFit, newdata = test)
     #print("KNN ------------------------")
@@ -107,16 +115,16 @@ for(xx in 1:n_iter){
         KNN_perf = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = knnPredict2[,2] #apply(knnPredict2, 1, max) 
+        ppp = as.matrix(knnPredict2)[,2] #apply(knnPredict2, 1, max) 
         #KNN_perf = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf = get_ECE_equal_width(test_labels-1, ppp)
-        
-        #KNN_perf = ece(np_array(ppp), np_array(test_labels-1))
-        KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        KNN_perf = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
+        #KNN_perf = tce_multiclass(np_array(ppp), np_array(test_labels-1))
+        #KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$ 
 
-    # NON-WEIGHTED KNN
+    # WEIGHTED KNN
     # Now with caret
     library(caret)
     #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
@@ -124,7 +132,7 @@ for(xx in 1:n_iter){
     knnFit <- train(x=train, y=as.factor(train_labels), 
                     method = "kknn",
                     preProcess =  c("center","scale"),
-                    tuneGrid = data.frame(kmax = setK, distance = 2, kernel = "triangular"))
+                    tuneGrid = data.frame(kmax = setK[kk], distance = 2, kernel = "triangular"))
     knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
     knnPredict  <- predict(knnFit, newdata = test)
     #print("KNN ------------------------")
@@ -138,12 +146,12 @@ for(xx in 1:n_iter){
         KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
         #KNN_perf = MLmetrics::F1_Score(knnPredict, test_labels)
     }
-        ppp = knnPredict2[,2] # apply(knnPredict2, 1, max) 
+        ppp = as.matrix(knnPredict2)[,2] # apply(knnPredict2, 1, max) 
         #KNN_perf_w = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf_w = get_ECE_equal_width(test_labels-1, ppp)
-        #KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1))
-        #print(ppp)
-        KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
+        KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
+        #KNN_perf_w = tce_multiclass(np_array(ppp), np_array(test_labels-1))
+        #KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
         #KNN_perf = cstat$calibration_error$          
 
@@ -154,6 +162,8 @@ RES[xx,2] = KNN_perf
 RES[xx,3] = KNN_perf_w
 
 print(RES)
+}
+write.table(RES, file=paste(DATASET,"_ECE_",setK[kk],".txt",sep=""))
 }
 
 colnames(RES) = c("MaMi","kNN","wkNN")

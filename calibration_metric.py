@@ -21,9 +21,98 @@ from sklearn.utils import check_consistent_length
 from sklearn.metrics._base import _check_pos_label_consistency
 
 
+import numpy as np
+
+def tce_multiclass(preds, labels, siglevel=0.05, strategy='pavabc', n_min=10, n_max=1000, n_bin=10, savepath=False, ymax=None):
+    """
+    Compute TCE (Thresholded Calibration Error) for multiclass classification by averaging one-vs-rest TCE.
+
+    Args:
+        preds (np.ndarray): Array of shape (n_samples, n_classes) with predicted probabilities.
+        labels (np.ndarray): Array of shape (n_samples,) with true class labels (as integers).
+        siglevel (float): Significance level for binomial tests.
+        strategy (str): Binning strategy ('uniform', 'quantile', 'pavabc', etc.).
+        n_min (int): Minimum bin size (for PAVABC).
+        n_max (int): Maximum bin size (for PAVABC).
+        n_bin (int): Number of bins (for quantile/uniform strategies).
+        savepath (str or False): Optional path prefix to save plots.
+        ymax (float or None): Y-axis max value for plots.
+
+    Returns:
+        float: Average TCE over all classes (% of significantly miscalibrated predictions).
+    """
+    n_classes = preds.shape[1]
+    tce_per_class = []
+
+    for class_idx in range(n_classes):
+        # One-vs-rest labels
+        binary_labels = (labels == class_idx).astype(int)
+        binary_preds = preds[:, class_idx]
+
+        # Optional plot saving per class
+        plot_path = f"{savepath}_class{class_idx}.png" if savepath else False
+
+        # Use binary tce function per class
+        tce_score = tce(
+            binary_preds,
+            binary_labels,
+            siglevel=siglevel,
+            strategy=strategy,
+            n_min=n_min,
+            n_max=n_max,
+            n_bin=n_bin,
+            savepath=plot_path,
+            ymax=ymax
+        )
+        tce_per_class.append(tce_score)
+
+    return np.mean(tce_per_class)
+
+
+def ece_multiclass(preds, labels, n_bins=10, mode='l1'):
+    """
+    Compute ECE (Expected Calibration Error) for multi-class classification.
+
+    Arguments:
+    - preds: np.ndarray of shape (n_samples, n_classes), predicted probabilities.
+    - labels: np.ndarray of shape (n_samples,), true class labels as integers.
+    - n_bins: number of bins.
+    - mode: distance metric, 'l1' or 'l2'.
+
+    Returns:
+    - ece: scalar float, the expected calibration error.
+    """
+    confidences = np.max(preds, axis=1)
+    predictions = np.argmax(preds, axis=1)
+    accuracies = (predictions == labels).astype(float)
+
+    bin_boundaries = np.linspace(0, 1, n_bins + 1)
+    ece = 0.0
+
+    for i in range(n_bins):
+        bin_lower = bin_boundaries[i]
+        bin_upper = bin_boundaries[i + 1]
+
+        in_bin = (confidences > bin_lower) & (confidences <= bin_upper)
+        prop_in_bin = np.mean(in_bin)
+
+        if prop_in_bin > 0:
+            accuracy_in_bin = np.mean(accuracies[in_bin])
+            avg_confidence_in_bin = np.mean(confidences[in_bin])
+
+            if mode == 'l1':
+                ece += np.abs(avg_confidence_in_bin - accuracy_in_bin) * prop_in_bin
+            elif mode == 'l2':
+                ece += ((avg_confidence_in_bin - accuracy_in_bin) ** 2) * prop_in_bin
+
+    return ece
+
+
 
 def ece(preds, labels, n_bin=10, mode='l1', savepath=False): 
-    bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "uniform", n_bin=n_bin)
+    #bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "uniform", n_bin=n_bin)
+    bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "quantile", n_bin=n_bin)
+    
     prob_pred = np.array([ elem.mean() if len(elem) > 0 else 0.0 for elem in bin_preds ])
     prob_data = np.zeros(len(bin_total))
     prob_data[bin_total!=0] = bin_count[bin_total!=0] / bin_total[bin_total!=0]

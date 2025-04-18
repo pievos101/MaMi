@@ -62,6 +62,7 @@ for(xx in 1:nrow(K1_l)){
         #COV[yy] = sum(C_list[[xx]][ids])/(length(ids)*k2)
         COV[yy] = sum(C_list[[xx]][ids])/(k1*k2)
     }
+
     #print(COV)
   COV_ALL[[xx]] = COV 
 }
@@ -80,10 +81,11 @@ for(xx in 1:dim(COV)[1]){
 
 }
 
+
 #COV  = as.numeric(sapply(COV_ALL, function(x){max(x)}))
 
 # NORMALIZE
-#normalized_COV <- t(apply(COV, 1, function(row) row / sum(row)))
+#COV <- t(apply(COV, 1, function(row) row / sum(row)))
 
 return(list(prediction=PRED, coverage=COV))
 

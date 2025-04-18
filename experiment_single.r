@@ -29,7 +29,7 @@ labels = as.numeric(as.factor(labels))
     rownames(test) = (nrow(train)+1):(nrow(train)+nrow(test))
 
 
-res = mami(train, test, train_labels, k1=5, k2=10)
+res = mami(train, test, train_labels, k1=2, k2=5)
 
 library(caret)
 #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)

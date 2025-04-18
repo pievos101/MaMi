@@ -8,7 +8,7 @@ library(MLmetrics)
 library(CalibratR)
 
 
-DATASET = c("IONOSPHERE")
+DATASET = c("HEART")
 
 res = get_dataset(DATASET)
 DATA  = res$train
@@ -24,13 +24,16 @@ n_iter = 100
 
 
 probs = TRUE
-wclass = 1
+wclass = 0
 calibMethod = "BRIER"
 setK = c(1,2,3,5,10,50)
 
 for(aa in 1:length(setK)){
-RES = matrix(NaN, n_iter, 2)
+RES = matrix(NaN, n_iter, 3)
+colnames(RES) = c("MaMi","kNN","wKNN")
 for(xx in 1:n_iter){
+
+    cat("K=",setK[aa],sep="","\n")
 
     # train test split
     ids = sample(1:nrow(DATA), ceiling(0.8*nrow(DATA)))
@@ -86,6 +89,7 @@ for(xx in 1:n_iter){
 
     #ARI(pred, test_labels)
 
+    # NON-WEIGHTED KNN
     # Now with caret
     library(caret)
     #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
@@ -125,10 +129,52 @@ for(xx in 1:n_iter){
         }else{
         KNN_perf = cstat$calibration_error$CLE_class_1     
         } 
-                     
+    
+    # WEIGHTED KNN
+    # Now with caret
+    library(caret)
+    #ctrl <- trainControl(method="repeatedcv",repeats = 3) #,classProbs=TRUE,summaryFunction = twoClassSummary)
+    #knnFit <- train(Direction ~ ., data = training, method = "knn", trControl = ctrl, preProcess = c("center","scale"), tuneLength = 20)
+    knnFit <- train(x=train, y=as.factor(train_labels), 
+                    method = "kknn",
+                    preProcess =  c("center","scale"),
+                    tuneGrid=data.frame(kmax = setK[aa], distance = 2, kernel = "triangular"))
+    knnPredict2 <- predict(knnFit, newdata = test, type = "prob")
+    knnPredict  <- predict(knnFit, newdata = test)
+    #print("KNN ------------------------")
+    #print(knnPredict2)
+    
+    #knnPredict <- knnPredict[,2]
+    colnames(knnPredict2) = sort(unique(train_labels))
+    if(probs){
+        KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
+    }else{
+        KNN_perf_w = multiclass.roc(test_labels, knnPredict2)$auc[1]
+        #KNN_perf_w = MLmetrics::F1_Score(knnPredict, test_labels)
+    }
+        ppp = knnPredict2[,2] #apply(pred2, 1, max)
+        #ppp = rep(NaN, nrow(pred2))
+        #for(zz in 1:nrow(pred2)){
+        #    if((test_labels[zz])==1){
+        #        ppp[zz] = pred2[zz,1] 
+        #    }else{
+        #        ppp[zz] = pred2[zz,2]
+        #    }
+        #}
+
+        KNN_perf_w = getECE(test_labels-1, ppp)
+        cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
+        
+        if(wclass==0){
+        KNN_perf_w = cstat$calibration_error$CLE_class_0 
+        }else{
+        KNN_perf_w = cstat$calibration_error$CLE_class_1     
+        }             
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = KNN_perf
+RES[xx,3] = KNN_perf_w
+
 print(RES)
 }
 
