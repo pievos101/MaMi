@@ -6,7 +6,7 @@ library(mlbench)
 
 source("/home/bastian/GitHub/MaMi/get_dataset.r")
 
-DATASET = c("HEART")
+DATASET = c("ECOLI")
 
 res = get_dataset(DATASET)
 DATA  = res$train

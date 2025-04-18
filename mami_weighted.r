@@ -22,8 +22,8 @@ for (xx in (nrow(train)+1):(nrow(train)+nrow(test))){
     #print(vec_s)
 
 }
-print(K1_l[1,])
-print(K1_dist[1,])
+#print(K1_l[1,])
+#print(K1_dist[1,])
 
 #print(K1)
 
@@ -48,8 +48,8 @@ for(xx in 1:nrow(K1)){
   K2_dist = matrix(NaN, k1, k2)
   
 }
-print(K2_list[[1]])
-print(K2_list_dist[[1]])
+#print(K2_list[[1]])
+#print(K2_list_dist[[1]])
 
 C_list = list()
 C_list_sim = list()
@@ -73,8 +73,8 @@ for(xx in 1:length(K2_list)){
     C = rep(NaN, k1)
     
 }
-print(C_list[[1]])
-print(C_list_sim[[1]])
+#print(C_list[[1]])
+#print(C_list_sim[[1]])
 
 
 COV_ALL = list()
@@ -104,7 +104,7 @@ for(xx in 1:nrow(K1_l)){
   
 }
 
-print(COV_ALL_sim[[1]])
+#print(COV_ALL_sim[[1]])
 
 PRED = as.numeric(sapply(COV_ALL_sim, function(x){names(which.max(x))}))
 
