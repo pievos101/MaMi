@@ -1,8 +1,13 @@
-mami <- function(train, test, train_labels, k1=5, k2=10){
+mami <- function(train, test, train_labels, k1=5, k2=10, 
+            distance="euclidean", scaling=TRUE){
 
 D  = rbind(train, test)
-D1 = as.matrix(dist(scale(D)))
-#D1 = as.matrix(dist(D))
+
+if(scaling){
+    D1 = as.matrix(dist(scale(D), method=distance))
+}else{
+    D1 = as.matrix(dist(D))
+}
 
 # Calculate first layer neigborhood for each test point
 K1 = matrix(NaN,nrow(test),k1)
