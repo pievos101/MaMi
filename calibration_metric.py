@@ -111,8 +111,9 @@ def ece_multiclass(preds, labels, n_bins=10, mode='l1'):
 
 def ece(preds, labels, n_bin=10, mode='l1', savepath=False): 
     #bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "uniform", n_bin=n_bin)
-    bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "quantile", n_bin=n_bin)
-    
+    #bin_preds, bin_count, bin_total, bins = calibration_summary(preds, labels, "quantile", n_bin=n_bin)
+    bin_preds, bin_count, bin_total, _ = calibration_summary(preds, labels, 'pavabc', n_min=10, n_max=1000, n_bin=n_bin)
+
     prob_pred = np.array([ elem.mean() if len(elem) > 0 else 0.0 for elem in bin_preds ])
     prob_data = np.zeros(len(bin_total))
     prob_data[bin_total!=0] = bin_count[bin_total!=0] / bin_total[bin_total!=0]

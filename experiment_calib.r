@@ -10,8 +10,9 @@ library(CalibratR)
 library(reticulate)
 source_python("/home/bastian/GitHub/MaMi/calibration_metric.py")
 #source_python("/home/bastian/GitHub/MaMi/calibration_metric_2.py")
+#source_python("/home/bastian/GitHub/MaMi/calibration_metric_3.py")
 
-DATASET = "SONAR"
+DATASET = "PARKINSON"
 
 res = get_dataset(DATASET)
 DATA  = res$train
@@ -80,11 +81,12 @@ for(xx in 1:n_iter){
         #print(pred2)
         #pred2 = t(apply(pred2, 1, function(row) row / sum(row)))
         ppp = pred2[,2] #apply(pred2, 1, max) 
+        ppp2 = pred2
         #MAMI_perf = getECE(test_labels-1, ppp, n_bins=10)
         #MAMI_perf = get_ECE_equal_width(test_labels-1, ppp)
-        #MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"), 
-         #   mode='l1')
-        MAMI_perf = ModelMetrics::brier(actual=test_labels-1, predicted=ppp)
+        MAMI_perf = ece(np_array(ppp), np_array(test_labels-1, dtype="int"), 
+            mode='l1')
+        #MAMI_perf = ModelMetrics::brier(actual=test_labels-1, predicted=ppp)
         #MAMI_perf = tce_multiclass(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #print(MAMI_perf)
         #MAMI_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
@@ -96,8 +98,10 @@ for(xx in 1:n_iter){
         #LAB_MATRIX[(test_labels-1)==1, 2] = 1
         #LAB_MATRIX[(test_labels-1)==0, 1] = 1
         #MAMI_perf = classwise_ECE(np_array(LAB_MATRIX), np_array(pred2))
-        
+        #ece = ECE(as.integer(10))
+        #MAMI_perf = ece$measure(np_array(ppp2), np_array(test_labels-1))
 
+    #print(MAMI_perf)
     #ARI(pred, test_labels)
 
     # NON-WEIGHTED KNN
@@ -126,8 +130,8 @@ for(xx in 1:n_iter){
         ppp2 = as.matrix(knnPredict2) 
         #KNN_perf = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf = get_ECE_equal_width(test_labels-1, ppp)
-        #KNN_perf = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
-        KNN_perf = ModelMetrics::brier(actual=test_labels-1, predicted=ppp)
+        KNN_perf = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
+        #KNN_perf = ModelMetrics::brier(actual=test_labels-1, predicted=ppp)
         
         #KNN_perf = tce_multiclass(np_array(ppp), np_array(test_labels-1))
         #KNN_perf = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
@@ -136,6 +140,8 @@ for(xx in 1:n_iter){
 
         #KNN_perf = classwise_ECE(np_array(LAB_MATRIX), np_array(ppp2))
         
+        #ece = ECE(as.integer(10))
+        #KNN_perf = ece$measure(np_array(ppp2), np_array(test_labels-1))
 
     # WEIGHTED KNN
     # Now with caret
@@ -164,8 +170,8 @@ for(xx in 1:n_iter){
          
         #KNN_perf_w = getECE(test_labels-1, ppp, n_bins=10)
         #KNN_perf_w = get_ECE_equal_width(test_labels-1, ppp)
-        #KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
-        KNN_perf_w = ModelMetrics::brier(actual=test_labels-1, predicted=ppp) 
+        KNN_perf_w = ece(np_array(ppp), np_array(test_labels-1), mode='l1')
+        #KNN_perf_w = ModelMetrics::brier(actual=test_labels-1, predicted=ppp) 
         #KNN_perf_w = tce_multiclass(np_array(ppp), np_array(test_labels-1))
         #KNN_perf_w = tce(np_array(ppp), np_array(test_labels-1, dtype="int"))
         #cstat = CalibratR::reliability_diagramm(test_labels-1, ppp)
@@ -173,6 +179,8 @@ for(xx in 1:n_iter){
 
         #KNN_perf_w = classwise_ECE(np_array(LAB_MATRIX), np_array(ppp2))
        
+        #ece = ECE(as.integer(10))
+        #KNN_perf_w = ece$measure(np_array(ppp2), np_array(test_labels-1))
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = KNN_perf
@@ -180,8 +188,8 @@ RES[xx,3] = KNN_perf_w
 
 print(RES)
 }
-write.table(RES, file=paste(DATASET,"_BRIER_",setK[kk],".txt",sep=""))
+write.table(RES, file=paste(DATASET,"_ECE3_",setK[kk],".txt",sep=""))
+colnames(RES) = c("MaMi","kNN","wkNN")
+boxplot(RES, col="cadetblue", ylab="Calib")
 }
 
-colnames(RES) = c("MaMi","kNN","wkNN")
-boxplot(RES, col="cadetblue", ylab="Adjusted R-index")

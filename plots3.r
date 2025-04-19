@@ -4,7 +4,7 @@ D_ALL = NULL
 
 for (xx in 1:length(DATASETS)){
     for(yy in 1:length(K)){
-        IN = paste(DATASETS[xx],"_ECE_",K[yy],".txt", sep="")    
+        IN = paste(DATASETS[xx],"_ECE3_",K[yy],".txt", sep="")    
         D = read.table(IN)
         #D = D[,1] - D[,2]
         D = cbind(DATASETS[xx],K[yy], D)
