@@ -8,7 +8,17 @@ library(mlbench)
 library(ModelMetrics)
 library(MLmetrics)
 
-DATASET = "IONOSPHERE"
+
+IN = c("IRIS","ECOLI","YEAST","IONOSPHERE",
+"WINE","PARKINSON", "HEART", "SONAR", "WDBC")
+
+IN = c("IONOSPHERE","PARKINSON", "HEART", "SONAR")
+
+
+for(DATASET in IN){
+
+#DATASET = "IONOSPHERE"
+
 res = get_dataset(DATASET)
 DATA  = res$train
 labels = res$target
@@ -34,12 +44,12 @@ probs = TRUE
 
 for(kk in 1:length(method)){
 
-RES = matrix(NaN, n_iter, 2)
-colnames(RES) = c("MaMi","wMAMI")
+RES = matrix(NaN, n_iter, 3)
+colnames(RES) = c("MaMi","wMAMI","diff")
 
 for(xx in 1:n_iter){
   
-
+    print(DATASET)
     # train test split
     ids = sample(1:nrow(DATA), ceiling(0.8*nrow(DATA)))
     train = DATA[ids,]
@@ -55,10 +65,31 @@ for(xx in 1:n_iter){
     rownames(test) = (nrow(train)+1):(nrow(train)+nrow(test))
 
 
+    if(FALSE){
+        # swap 
+        labs = unique(train_labels)
+        c1 = which(train_labels==labs[1])
+        c2 = which(train_labels==labs[2])
+        
+        L = min(c(length(c1),length(c2)))
+
+        # Calculate how many samples to take
+        n_s <- ceiling(L * 0.25)
+
+        # Sample without replacement
+        s1 <- sample(c1, size = n_s, replace = FALSE)
+        s2 <- sample(c2, size = n_s, replace = FALSE)
+
+        # Swap
+        train_labels[s1] = labs[2]
+        train_labels[s2] = labs[1]
+    }
+
+
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
     res = mami(train, test, train_labels, k1=3, k2=5, 
-                distance=method[kk], scaling=FALSE)
+                distance=method[kk], scaling=TRUE)
     pred   = res$prediction
     pred2  = res$coverage
     #print("MAMI ------------------------")
@@ -81,7 +112,7 @@ for(xx in 1:n_iter){
     #res = mami_crossval(train, test, train_labels)
     #print(res$k1);print(res$k2);
     res = mami_weighted(train, test, train_labels, k1=3, k2=5, 
-                    distance=method[kk], scaling=FALSE)
+                    distance=method[kk], scaling=TRUE)
     pred   = res$prediction
     pred2  = res$coverage
     #print("MAMI ------------------------")
@@ -102,6 +133,7 @@ for(xx in 1:n_iter){
 
 RES[xx,1] = MAMI_perf
 RES[xx,2] = MAMI_perf_w
+RES[xx,3] = MAMI_perf - MAMI_perf_w
 
 print(RES)
 
@@ -109,4 +141,4 @@ print(RES)
 IN = paste(DATASET,"_AUC_dist_",method[kk],".txt", sep="")
 write.table(RES, file=IN)
 }
-
+}

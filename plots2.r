@@ -1,3 +1,58 @@
+
+
+### DISTANCE TYPE AUC DIFFERENCE
+
+DATASETS = c("IONOSPHERE","PARKINSON", "HEART", "SONAR")
+#DATASETS = c("ECOLI","GLASS","YEAST")
+#DATASETS = c("IRIS","ECOLI","YEAST","IONOSPHERE",
+#"WINE","PARKINSON", "HEART", "SONAR", "WDBC")
+
+K = c("euclidean", "manhattan", "canberra", "minkowski")
+
+D_ALL = NULL
+
+for (xx in 1:length(DATASETS)){
+    for(yy in 1:length(K)){
+        IN = paste(DATASETS[xx],"_AUC_dist_",K[yy],".txt", sep="")    
+        D = read.table(IN)
+        #D = D[,1] - D[,2]
+        D = cbind(DATASETS[xx],K[yy], D)
+        D_ALL = rbind(D_ALL, D)
+    }
+    
+}
+
+DATA = D_ALL
+colnames(DATA) = c("data","k","MaMi","wMAMI","AUCdiff")
+DATA = as.data.frame(DATA)
+DATA$MaMi = as.numeric(DATA$MaMi)
+DATA$wMAMI = as.numeric(DATA$wMAMI)
+DATA$k = as.factor(DATA$k)
+
+DATA = DATA[,c(1,2,5)] # Just PLOT DIFF
+
+library(reshape)
+library(ggplot2)
+
+DATA = melt(DATA)
+colnames(DATA) = c("data","k","Method","value")
+
+
+p <- ggplot(DATA, aes(x=k, y=value, fill=Method)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
+  #geom_boxplot()+
+  #geom_hline(yintercept=0, linetype="dashed", color = "red", size=1) +
+  ylab("ROC-AUC Difference (MaMi - wMAMI)") +
+  xlab("Distance Method") +  
+  #theme_bw() +
+  theme_minimal()  + 
+  theme(legend.position="none",text = element_text(size=12)) +
+  #ylim(-0.025,0.025) +
+  facet_wrap(~factor(data)) +
+  coord_flip()
+
+
 ### DISTANCE TYPE
 
 DATASETS = c("IONOSPHERE","PARKINSON", "HEART", "SONAR")
