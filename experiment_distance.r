@@ -65,7 +65,7 @@ for(xx in 1:n_iter){
     rownames(test) = (nrow(train)+1):(nrow(train)+nrow(test))
 
 
-    if(FALSE){
+    if(TRUE){
         # swap 
         labs = unique(train_labels)
         c1 = which(train_labels==labs[1])
@@ -138,7 +138,7 @@ RES[xx,3] = MAMI_perf - MAMI_perf_w
 print(RES)
 
 }
-IN = paste(DATASET,"_AUC_dist_",method[kk],".txt", sep="")
+IN = paste(DATASET,"_AUC_dist_noise_25_",method[kk],".txt", sep="")
 write.table(RES, file=IN)
 }
 }
