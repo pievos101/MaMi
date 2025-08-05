@@ -1,12 +1,19 @@
 mami <- function(train, test, train_labels, k1=5, k2=10, 
-            distance="euclidean", scaling=TRUE){
+            distance="euclidean", scaling=TRUE, dmatrix=NULL){
 
-D  = rbind(train, test)
+# Distance calculation when dmatrix=NULL
+if(is.null(dmatrix)){
 
-if(scaling){
-    D1 = as.matrix(dist(scale(D), method=distance))
+    D  = rbind(train, test)
+
+    if(scaling){
+        D1 = as.matrix(dist(scale(D), method=distance))
+    }else{
+        D1 = as.matrix(dist(D))
+    }
+
 }else{
-    D1 = as.matrix(dist(D))
+    D1 = dmatrix
 }
 
 # Calculate first layer neigborhood for each test point
@@ -26,7 +33,7 @@ for (xx in (nrow(train)+1):(nrow(train)+nrow(test))){
 #print(K1_l)
 #print(K1)
 
-# Calculate Second layer Neighborhood for each point 
+# Calculate Second layer Neighborhood for each first-layer point 
 K2 = matrix(NaN, k1, k2)
 K2_list = list()
 
@@ -43,7 +50,7 @@ for(xx in 1:nrow(K1)){
 
 C_list = list()
 C = rep(NaN, k1)
-# Cac Coverage
+# Calculate Coverage
 for(xx in 1:length(K2_list)){
     for(yy in 1:k1){
         C[yy] = sum(K2_list[[xx]][yy,]==K1_l[xx,yy])         
