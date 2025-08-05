@@ -8,7 +8,7 @@
 
 
 ## Installation
-The MaMi R-package can be installed using devtools.
+The MaMi R-package [coming soon ...] can be installed using devtools.
 
 ```{r}
 install.packages("devtools")
